@@ -110,4 +110,64 @@ mod tests {
         let is_matched = ne.test();
         assert!(is_matched);
     }
+
+    #[test]
+    fn nfa_executor_string_bracket_w_success() {
+        const RULE: &str = r"a[\w]b";
+        const TEST_SUCC_1: [&str; 3] = ["aab", "a0b", "a_b"];
+
+        for i in TEST_SUCC_1 {
+            let nfa = NFA::from_str(RULE).unwrap();
+            let ne = NFAExecutor::new(nfa, i);
+            assert!(ne.test());
+        }
+    }
+
+    #[test]
+    fn nfa_executor_string_bracket_w_fail() {
+        const RULE: &str = r"a[\w]b";
+        const TEST_SUCC: &str = "ab";
+
+        let nfa = NFA::from_str(RULE).unwrap();
+
+        let ne = NFAExecutor::new(nfa, TEST_SUCC);
+
+        assert_eq!(ne.test(), false);
+    }
+
+    #[test]
+    fn nfa_executor_string_bracket_az_success() {
+        const RULE: &str = r"a[a-z]b";
+        const TEST_SUCC_1: [&str; 3] = ["aab", "abb", "azb"];
+
+        for i in TEST_SUCC_1 {
+            let nfa = NFA::from_str(RULE).unwrap();
+            let ne = NFAExecutor::new(nfa, i);
+            assert!(ne.test());
+        }
+    }
+
+    #[test]
+    fn nfa_executor_string_bracket_az_fail() {
+        const RULE: &str = r"a[a-z]b";
+        const TEST_SUCC_1: [&str; 3] = ["aAb", "a0b", "a_b"];
+
+        for i in TEST_SUCC_1 {
+            let nfa = NFA::from_str(RULE).unwrap();
+            let ne = NFAExecutor::new(nfa, i);
+            assert_eq!(ne.test(), false);
+        }
+    }
+
+    #[test]
+    fn nfa_executor_string_bracket_alphanumeric_success() {
+        const RULE: &str = r"a[a-zA-Z0-9]b";
+        const TEST_SUCC_1: [&str; 3] = ["aab", "aAb", "a0b"];
+
+        for i in TEST_SUCC_1 {
+            let nfa = NFA::from_str(RULE).unwrap();
+            let ne = NFAExecutor::new(nfa, i);
+            assert!(ne.test());
+        }
+    }
 }

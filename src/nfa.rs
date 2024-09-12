@@ -281,16 +281,14 @@ impl NFA {
             return None;
         }
 
-        while let Some(c) = chars.peek() {
+        while let Some(c) = chars.next() {
             match c {
-                ']' => {
-                    chars.next();
-                    break;
-                }
+                ']' => break,
                 'a' => {
                     if let Some('-') = chars.peek() {
                         chars.next().unwrap();
                         if let Some('z') = chars.peek() {
+                            chars.next();
                             is_lowercase_alphabet = true;
                         } else {
                             nfa_or!(NFA::with('a'));
@@ -302,6 +300,7 @@ impl NFA {
                     if let Some('-') = chars.peek() {
                         chars.next().unwrap();
                         if let Some('Z') = chars.peek() {
+                            chars.next();
                             is_uppercase_alphabet = true;
                         } else {
                             nfa_or!(NFA::with('A'));
@@ -313,6 +312,7 @@ impl NFA {
                     if let Some('-') = chars.peek() {
                         chars.next().unwrap();
                         if let Some('9') = chars.peek() {
+                            chars.next();
                             is_digit = true;
                         } else {
                             nfa_or!(NFA::with('0'));
@@ -330,7 +330,7 @@ impl NFA {
                     None => panic!("typo: no more character"),
                 },
                 v => {
-                    nfa_or!(NFA::with(*v));
+                    nfa_or!(NFA::with(v));
                 }
             }
         }
