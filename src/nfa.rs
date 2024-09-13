@@ -421,6 +421,73 @@ impl Status {
         None
     }
 
+    pub fn next_all_skip_empty(&self) -> Vec<StatusBox> {
+        let mut res = Vec::new();
+
+        res
+    }
+
+    /// Status set that can reaches from status of NFA through empty
+    fn closure_s(status: StatusBox) -> Vec<StatusBox> {
+        let mut res = Vec::new();
+
+        res.push(Rc::clone(&status));
+
+        let s_res = Self::_closure_s(status);
+        res.extend(s_res);
+
+        res
+    }
+
+    fn _closure_s(status: StatusBox) -> Vec<StatusBox> {
+        let mut res = vec![Rc::clone(&status)];
+        let status_ref = RefCell::borrow(&status);
+        let mut cur_used = false;
+
+        for item in status_ref.status_set.iter() {
+            if item.0.input(EMPTY) {
+                let r = Self::closure_s(Rc::clone(&item.1));
+                res.extend(r);
+            } else if !cur_used {
+                res.push(Rc::clone(&status));
+                cur_used = true;
+            }
+        }
+
+        res
+    }
+
+    /// the set that some closure_s of T
+    fn closure_t(status_t: Vec<StatusBox>) -> Vec<StatusBox> {
+        let mut res = Vec::new();
+
+        for status in status_t {
+            let t_res = Self::closure_s(Rc::clone(&status));
+            res.extend(t_res);
+        }
+
+        res
+    }
+
+    fn closure_t_a(status_t: Vec<StatusBox>, character: char) -> Vec<StatusBox> {
+        let mut res = Vec::new();
+
+        for status in status_t {
+            let status = RefCell::borrow(&status);
+            let throughable = status.status_set.iter().filter_map(|item| {
+                if item.0.input(character) {
+                    Some(Rc::clone(&item.1))
+                } else {
+                    None
+                }
+            });
+
+            res.extend(throughable);
+        }
+
+        res
+    }
+
     pub fn get_type(&self) -> &StatusType {
         &self.status_type
     }
