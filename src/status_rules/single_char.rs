@@ -1,5 +1,6 @@
 use super::StatusTargetRule;
 
+#[derive(Clone, PartialEq, Eq)]
 pub struct SingleCharRule {
     text: char,
 }
@@ -15,8 +16,15 @@ impl SingleCharRule {
 }
 
 impl StatusTargetRule for SingleCharRule {
+    fn get_id(&self) -> usize {
+        1_000
+    }
     fn input(&self, text: char) -> bool {
         self.text == text
+    }
+
+    fn clone(&self) -> Box<dyn StatusTargetRule> {
+        Box::new(Self { text: self.text })
     }
 }
 

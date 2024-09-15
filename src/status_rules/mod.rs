@@ -13,5 +13,13 @@ pub use digit::Digit;
 pub use single_char::SingleCharRule;
 
 pub trait StatusTargetRule {
+    fn get_id(&self) -> usize;
     fn input(&self, text: char) -> bool;
+    fn clone(&self) -> Box<dyn StatusTargetRule>;
+}
+
+impl PartialEq for dyn StatusTargetRule {
+    fn eq(&self, other: &Self) -> bool {
+        self.get_id() == other.get_id()
+    }
 }

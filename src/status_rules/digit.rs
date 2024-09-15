@@ -2,6 +2,7 @@ use super::StatusTargetRule;
 
 /// match single alphabet, digit, underline,
 /// equal to [a-ZA-Z0-9]
+#[derive(Clone, PartialEq, Eq)]
 pub struct Digit;
 
 impl Digit {
@@ -13,6 +14,14 @@ impl Digit {
 impl StatusTargetRule for Digit {
     fn input(&self, text: char) -> bool {
         text.is_ascii_digit()
+    }
+    
+    fn get_id(&self) -> usize {
+        1_001
+    }
+
+    fn clone(&self) -> Box<dyn StatusTargetRule> {
+        Box::new(Self)
     }
 }
 

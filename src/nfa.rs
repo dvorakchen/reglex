@@ -1,7 +1,7 @@
-use crate::status_rules::{
+use crate::{new_id, status_rules::{
     AlphaLowercaseRule, AlphaRule, AlphaUppercaseRule, AlphanumericUnderlineRule, Digit,
     SingleCharRule,
-};
+}};
 
 use super::status_rules::StatusTargetRule;
 use core::panic;
@@ -12,11 +12,10 @@ use std::{
     str::{Chars, FromStr},
 };
 
-type StatusBox = Rc<RefCell<Status>>;
+pub type StatusBox = Rc<RefCell<Status>>;
 
 const EMPTY: char = '\0';
 
-static mut CURRENT_ID: usize = 0;
 
 /// a NodeStatus must be ensure it's start off a start node, and end off a end node
 pub struct NFA {
@@ -35,14 +34,6 @@ pub enum StatusType {
     Start,
     Node,
     End,
-}
-
-fn new_id() -> usize {
-    unsafe {
-        CURRENT_ID += 1;
-
-        CURRENT_ID
-    }
 }
 
 macro_rules! init_start_rule {
@@ -374,6 +365,10 @@ impl Status {
         }))
     }
 
+    pub fn id(&self) -> usize {
+        self.id
+    }
+
     pub fn append_next(&mut self, text: char, status: StatusBox) {
         {
             let mut temp = RefCell::borrow_mut(&status);
@@ -428,10 +423,10 @@ impl Status {
     }
 
     /// Status set that can reaches from status of NFA through empty
-    fn closure_s(status: StatusBox) -> Vec<StatusBox> {
+    pub fn closure_s(status: &StatusBox) -> Vec<StatusBox> {
         let mut res = Vec::new();
 
-        res.push(Rc::clone(&status));
+        res.push(Rc::clone(status));
 
         let s_res = Self::_closure_s(status);
         res.extend(s_res);
@@ -439,14 +434,14 @@ impl Status {
         res
     }
 
-    fn _closure_s(status: StatusBox) -> Vec<StatusBox> {
+    fn _closure_s(status: &StatusBox) -> Vec<StatusBox> {
         let mut res = vec![Rc::clone(&status)];
         let status_ref = RefCell::borrow(&status);
         let mut cur_used = false;
 
         for item in status_ref.status_set.iter() {
             if item.0.input(EMPTY) {
-                let r = Self::closure_s(Rc::clone(&item.1));
+                let r = Self::closure_s(&item.1);
                 res.extend(r);
             } else if !cur_used {
                 res.push(Rc::clone(&status));
@@ -462,20 +457,24 @@ impl Status {
         let mut res = Vec::new();
 
         for status in status_t {
-            let t_res = Self::closure_s(Rc::clone(&status));
+            let t_res = Self::closure_s(&status);
             res.extend(t_res);
         }
 
         res
     }
 
-    fn closure_t_a(status_t: Vec<StatusBox>, character: char) -> Vec<StatusBox> {
+    pub fn closure_t_a(
+        status_t: &Vec<StatusBox>,
+        status_target_rule: Box<dyn StatusTargetRule>,
+    ) -> Vec<StatusBox> {
         let mut res = Vec::new();
 
         for status in status_t {
             let status = RefCell::borrow(&status);
             let throughable = status.status_set.iter().filter_map(|item| {
-                if item.0.input(character) {
+                let is_eq = (*item.0).eq(&*status_target_rule);
+                if is_eq {
                     Some(Rc::clone(&item.1))
                 } else {
                     None

@@ -2,6 +2,7 @@ use super::StatusTargetRule;
 
 /// match single alphabet, digit, underline,
 /// equal to [a-ZA-Z0-9_]
+#[derive(Clone, PartialEq, Eq)]
 pub struct AlphanumericUnderlineRule;
 
 impl AlphanumericUnderlineRule {
@@ -13,6 +14,13 @@ impl AlphanumericUnderlineRule {
 impl StatusTargetRule for AlphanumericUnderlineRule {
     fn input(&self, text: char) -> bool {
         text.is_ascii_alphanumeric() || text == '_'
+    }
+
+    fn get_id(&self) -> usize {
+        1_002
+    }
+    fn clone(&self) -> Box<dyn StatusTargetRule> {
+        Box::new(Self)
     }
 }
 

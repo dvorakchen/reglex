@@ -14,6 +14,13 @@ impl StatusTargetRule for AlphaUppercaseRule {
     fn input(&self, text: char) -> bool {
         text.is_ascii_uppercase()
     }
+    
+    fn get_id(&self) -> usize {
+        1_004
+    }
+    fn clone(&self) -> Box<dyn StatusTargetRule> {
+        Box::new(Self)
+    }
 }
 
 #[cfg(test)]

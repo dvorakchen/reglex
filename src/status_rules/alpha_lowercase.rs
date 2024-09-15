@@ -14,6 +14,13 @@ impl StatusTargetRule for AlphaLowercaseRule {
     fn input(&self, text: char) -> bool {
         text.is_ascii_lowercase()
     }
+    
+    fn get_id(&self) -> usize {
+        1_005
+    }
+    fn clone(&self) -> Box<dyn StatusTargetRule> {
+        Box::new(Self)
+    }
 }
 
 #[cfg(test)]
